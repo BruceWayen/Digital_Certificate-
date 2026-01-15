@@ -54,16 +54,16 @@
                 <!-- 第1行 -->
                 <div class="cell label">卖方</div>
                 <div class="cell">企业名称</div>
-                <div class="cell"><input type="text" class="editable" value=""></div>
+                <div class="cell"><div class="editable" contenteditable="true" spellcheck="false"></div>
                 <div class="cell label">统一社会信用代码</div>
-                <div class="cell"><input type="text" class="editable" value=""></div>
+                <div class="cell"><div class="editable" contenteditable="true" spellcheck="false"></div>
 
                 <!-- 第2行 -->
                 <div class="cell label">买方</div>
                 <div class="cell">企业名称</div>
-                <div class="cell"><input type="text" class="editable" value=""></div>
+                <div class="cell"><div class="editable" contenteditable="true" spellcheck="false"></div>
                 <div class="cell label">统一社会信用代码</div>
-                <div class="cell"><input type="text" class="editable" value=""></div>
+                <div class="cell"><div class="editable" contenteditable="true" spellcheck="false"></div>
             </div>
 
             <!-- 第二部分：左侧合并列 + 6行4列 -->
@@ -77,7 +77,7 @@
                             <!-- 左侧：大写金额 -->
                             <div class="amount-left">
                                 <span class="amount-label">人民币（大写）</span>
-                                <input type="text" class="editable" id="amountChinese" value="">
+                                <div class="editable" contenteditable="true" spellcheck="false" id="amountChinese"></div>
                             </div>
                             <!-- 右侧：数字表格 -->
                             <div class="amount-right">
@@ -123,21 +123,23 @@
 
                     <!-- 第2行 -->
                     <div class="cell label">户名</div>
-                    <div class="cell"><input type="text" class="editable" value=""></div>
+                    <div class="cell"><div class="editable" contenteditable="true" spellcheck="false"></div>
                     <div class="cell label">开户行行号</div>
-                    <div class="cell"><input type="text" class="editable" value=""></div>
+                    <div class="cell"><div class="editable" contenteditable="true" spellcheck="false"></div>
 
                     <!-- 第3行 -->
                     <div class="cell label">收款账号</div>
-                    <div class="cell"><input type="text" class="editable" value=""></div>
+                    <div class="cell"><div class="editable" contenteditable="true" spellcheck="false"></div>
                     <div class="cell label">开户行名称</div>
-                    <div class="cell"><input type="text" class="editable" value=""></div>
+                    <div class="cell"><div class="editable" contenteditable="true" spellcheck="false"></div>
 
                     <!-- 第4行 -->
                     <div class="cell label">预计付款日</div>
-                    <div class="cell"><input type="text" class="editable" value=""></div>
+                    <div class="cell"><div class="editable" contenteditable="true" spellcheck="false"></div>
                     <div class="cell label">HASH</div>
-                    <div class="cell"><input type="text" class="editable" value="">
+                    <div class="cell">
+                        <div class="editable" contenteditable="false" spellcheck="false" id="hashField"></div>
+
                     </div>
 
                     <!-- 第5行 -->
@@ -155,7 +157,7 @@
                         </div>
                     </div>
                     <div class="cell label">确认有效期</div>
-                    <div class="cell"><input type="text" class="editable" value=""></div>
+                    <div class="cell"><div class="editable" contenteditable="true" spellcheck="false"></div>
 
                     <!-- 第6行：确认阶段和确认依据在同一行 -->
                     <div class="cell label">确认阶段</div>
