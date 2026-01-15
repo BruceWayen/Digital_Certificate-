@@ -62,14 +62,6 @@ window.addEventListener('load', async () => {
         amountInput.addEventListener('input', convertChineseToNumber);
         amountInput.addEventListener('change', convertChineseToNumber);
     }
-    document.querySelectorAll('.editable[contenteditable="true"]').forEach(el => {
-        el.addEventListener('input', () => {
-            if (el.id === 'amountChinese') {
-                convertChineseToNumber();
-            }
-        });
-    });
-
 });
 
 
@@ -586,8 +578,7 @@ async function calculateHash(data) {
     const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    // 返回32位哈希值（截取前32个字符）
-    return hashHex.substring(0, 32);
+    return hashHex;
 }
 
 // 填充数据到页面
@@ -606,53 +597,54 @@ async function fillData(rowData) {
     console.log("开始填充数据：", rowData);
 
     // 获取section-part1中的所有input
-    const part1Editables = document.querySelectorAll('.section-part1 .editable');
+    const part1Inputs = document.querySelectorAll('.section-part1 input.editable');
     // 第1个：卖方企业名称
-    part1Editables[0].textContent = rowData['卖方'] || '';
+    part1Inputs[0].value = rowData['卖方'] || '';
     // 第2个：卖方统一信用代码
-    part1Editables[1].textContent = rowData['卖方统一信用代码'] || '';
+    part1Inputs[1].value = rowData['卖方统一信用代码'] || '';
     // 第3个：买方企业名称
-    part1Editables[2].textContent = rowData['买方'] || '';
+    part1Inputs[2].value = rowData['买方'] || '';
     // 第4个：买方统一信用代码
-    part1Editables[3].textContent = rowData['买方统一信用代码'] || '';
+    part1Inputs[3].value = rowData['买方统一信用代码'] || '';
 
     // 确认金额（数字转中文）
     const rawAmount = rowData['确认金额'];
     const amount = (rawAmount !== undefined && rawAmount !== null && rawAmount !== '') ? parseFloat(rawAmount) : 0;
     const chineseAmount = numberToChineseAmount(amount);
     // 填充左侧大写金额
-    document.getElementById('amountChinese').textContent = chineseAmount;
+    document.getElementById('amountChinese').value = chineseAmount;
     // 触发转换，填充右侧数字表格
     convertChineseToNumber();
 
-
     // 获取part2-content中的所有input（按顺序）- 排除确认金额大写输入框
-    const allPart2Editables = document.querySelectorAll('.part2-content .editable');
+    const allPart2Inputs = document.querySelectorAll('.part2-content input.editable');
     // 找到确认金额输入框的位置并排除，得到剩余的输入框
-    const filteredPart2Editables = Array.from(allPart2Editables).filter(el => el.id !== 'amountChinese');
+    const amountChineseInput = document.getElementById('amountChinese');
+    const filteredPart2Inputs = Array.from(allPart2Inputs).filter(input => input !== amountChineseInput);
 
     // 处理默认值：如果Excel中没有值，填"--"
     // 第1个：户名
     const accountName = rowData['户名'];
-    filteredPart2Editables[0].value = (accountName && accountName !== '' && accountName !== 'NaN' && accountName !== null && accountName !== undefined) ? String(accountName) : '--';
+    filteredPart2Inputs[0].value = (accountName && accountName !== '' && accountName !== 'NaN' && accountName !== null && accountName !== undefined) ? String(accountName) : '--';
 
     // 第2个：开户行行号
     const bankNumber = rowData['开户行行号'];
-    filteredPart2Editables[1].value = (bankNumber && bankNumber !== '' && bankNumber !== 'NaN' && bankNumber !== null && bankNumber !== undefined) ? String(bankNumber) : '--';
+    filteredPart2Inputs[1].value = (bankNumber && bankNumber !== '' && bankNumber !== 'NaN' && bankNumber !== null && bankNumber !== undefined) ? String(bankNumber) : '--';
 
     // 第3个：收款账号
     const accountNumber = rowData['收款账号'];
-    filteredPart2Editables[2].value = (accountNumber && accountNumber !== '' && accountNumber !== 'NaN' && accountNumber !== null && accountNumber !== undefined) ? String(accountNumber) : '--';
+    filteredPart2Inputs[2].value = (accountNumber && accountNumber !== '' && accountNumber !== 'NaN' && accountNumber !== null && accountNumber !== undefined) ? String(accountNumber) : '--';
 
     // 第4个：开户行名称
     const bankName = rowData['开户行名称'];
-    filteredPart2Editables[3].value = (bankName && bankName !== '' && bankName !== 'NaN' && bankName !== null && bankName !== undefined) ? String(bankName) : '--';
+    filteredPart2Inputs[3].value = (bankName && bankName !== '' && bankName !== 'NaN' && bankName !== null && bankName !== undefined) ? String(bankName) : '--';
 
     // 第5个：预计付款日（没有默认填系统当前日期）
     let paymentDate = formatDate(rowData['预计付款日']);
-    filteredPart2Editables[4].value = paymentDate;
+    filteredPart2Inputs[4].value = paymentDate;
 
-    // 第6个：确认有效期（在filteredPart2Editables中是第6个）
+    // 第6个：HASH（在filteredPart2Inputs中是第5个，但需要先计算再填充）
+    // 第7个：确认有效期（在filteredPart2Inputs中是第6个）
     let validDate;
     if (rowData['确认有效期'] && rowData['确认有效期'] !== '' && rowData['确认有效期'] !== 'NaT' && rowData['确认有效期'] !== null && rowData['确认有效期'] !== undefined) {
         validDate = formatDate(rowData['确认有效期']);
@@ -660,9 +652,9 @@ async function fillData(rowData) {
         // 如果Excel中没有提供确认有效期，则计算预计付款日的后两年
         validDate = getTwoYearsLater(paymentDate);
     }
-    filteredPart2Editables[6].value = validDate;
+    filteredPart2Inputs[6].value = validDate;
 
-    // 计算并填充HASH（第6个，即filteredPart2Editables[5]）
+    // 计算并填充HASH（第6个，即filteredPart2Inputs[5]）
     // HASH基于表格中所有数据计算
     const hashData = {
         buyer: rowData['买方'] || '',
@@ -673,21 +665,21 @@ async function fillData(rowData) {
             const rawAmount = rowData['确认金额'];
             return (rawAmount !== undefined && rawAmount !== null && rawAmount !== '') ? String(rawAmount) : '0';
         })(),
-        accountName: filteredPart2Editables[0].value,
-        bankNumber: filteredPart2Editables[1].value,
-        accountNumber: filteredPart2Editables[2].value,
-        bankName: filteredPart2Editables[3].value,
+        accountName: filteredPart2Inputs[0].value,
+        bankNumber: filteredPart2Inputs[1].value,
+        accountNumber: filteredPart2Inputs[2].value,
+        bankName: filteredPart2Inputs[3].value,
         paymentDate: paymentDate,
         validDate: validDate
     };
     const hash = await calculateHash(hashData);
-    filteredPart2Editables[5].value = hash;
+    filteredPart2Inputs[5].value = hash;
     // 设置HASH输入框为只读且不可修改
-    filteredPart2Editables[5].readOnly = true;
-    filteredPart2Editables[5].disabled = true;
-    filteredPart2Editables[5].style.backgroundColor = '#f5f5f5';
-    filteredPart2Editables[5].style.cursor = 'not-allowed';
-    filteredPart2Editables[5].style.color = '#666';
+    filteredPart2Inputs[5].readOnly = true;
+    filteredPart2Inputs[5].disabled = true;
+    filteredPart2Inputs[5].style.backgroundColor = '#f5f5f5';
+    filteredPart2Inputs[5].style.cursor = 'not-allowed';
+    filteredPart2Inputs[5].style.color = '#666';
 
     return {
         warrantNumber,
@@ -770,37 +762,37 @@ async function captureScreenshot(buyerName, amount) {
         // 等待样式生效
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        // // 强制重置可能影响布局的 CSS，只针对可能影响截图的特定元素
-        // const style = document.createElement('style');
-        // style.textContent = `
-        //     .section-part1 .cell {
-        //         overflow: visible !important;
-        //         word-break: break-word !important;
-        //         min-height: auto !important;
-        //     }
-        //     .part2-content .cell {
-        //         overflow: visible !important;
-        //         word-break: break-word !important;
-        //         min-height: auto !important;
-        //     }
-        //     .editable {
-        //         overflow: visible !important;
-        //         text-overflow: clip !important;
-        //         max-height: none !important;
-        //         line-height: normal !important;
-        //     }
-        //     input, textarea {
-        //         overflow: visible !important;
-        //         white-space: normal !important;
-        //         word-wrap: break-word !important;
-        //         line-height: normal !important;
-        //     }
-        //     .section-part1 .cell, .part2-content .cell {
-        //         position: static !important;
-        //         float: none !important;
-        //     }
-        // `;
-        // document.head.appendChild(style);
+        // 强制重置可能影响布局的 CSS，只针对可能影响截图的特定元素
+        const style = document.createElement('style');
+        style.textContent = `
+            .section-part1 .cell {
+                overflow: visible !important;
+                word-break: break-word !important;
+                min-height: auto !important;
+            }
+            .part2-content .cell {
+                overflow: visible !important;
+                word-break: break-word !important;
+                min-height: auto !important;
+            }
+            .editable {
+                overflow: visible !important;
+                text-overflow: clip !important;
+                max-height: none !important;
+                line-height: normal !important;
+            }
+            input, textarea {
+                overflow: visible !important;
+                white-space: normal !important;
+                word-wrap: break-word !important;
+                line-height: normal !important;
+            }
+            .section-part1 .cell, .part2-content .cell {
+                position: static !important;
+                float: none !important;
+            }
+        `;
+        document.head.appendChild(style);
 
         // 等待样式应用
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -839,7 +831,7 @@ async function captureScreenshot(buyerName, amount) {
             container.offsetHeight,
             container.clientHeight
         );
-
+        
         // 额外增加一些缓冲空间以确保所有内容都被捕获
         actualHeight = Math.floor(actualHeight * 1.1); // 增加10%的缓冲
 
